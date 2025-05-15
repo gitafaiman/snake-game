@@ -19,27 +19,18 @@ import {
 const Game = () => {
   const { gridWidth, gridHeight } = calculateGridSize();
   const [isMuted, setIsMuted] = useState(false);
+  const [userInteracted, setUserInteracted] = useState(false);
 
   const backgroundAudioRef = useRef(new Audio("/sounds/background.mp3"));
   const gameOverAudioRef = useRef(new Audio("/sounds/gameover.mp3"));
   const eatAudioRef = useRef(new Audio("/sounds/eat.mp3"));
   backgroundAudioRef.current.loop = true;
+
   useEffect(() => {
     backgroundAudioRef.current.muted = isMuted;
     gameOverAudioRef.current.muted = isMuted;
     eatAudioRef.current.muted = isMuted;
   }, [isMuted]);
-
-  useEffect(() => {
-    if (!gameOver && score === 0) {
-      backgroundAudioRef.current.play().catch(() => {});
-    }
-
-    return () => {
-      backgroundAudioRef.current.pause();
-      backgroundAudioRef.current.currentTime = 0;
-    };
-  }, []);
 
   const handleToggleMute = () => {
     setIsMuted((prev) => {
@@ -60,6 +51,7 @@ const Game = () => {
     { x: Math.floor(gridWidth / 2), y: Math.floor(gridHeight / 2) },
     { x: Math.floor(gridWidth / 2), y: Math.floor(gridHeight / 2) + 1 },
   ]);
+
   const [direction, setDirection] = useState("UP");
   const [foods, setFoods] = useState(
     Array(5)
@@ -187,34 +179,29 @@ const Game = () => {
   }, [snake, direction, checkCollision, gridSize, gameOver, isPaused, foods]);
 
   const resetGame = () => {
-    const newGridSize = calculateGridSize();
-    setGridSize(newGridSize);
-    setSnake([
-      {
-        x: Math.floor(newGridSize.gridWidth / 2),
-        y: Math.floor(newGridSize.gridHeight / 2),
-      },
-      {
-        x: Math.floor(newGridSize.gridWidth / 2),
-        y: Math.floor(newGridSize.gridHeight / 2) + 1,
-      },
-    ]);
-    setDirection("UP");
+    const { gridWidth, gridHeight } = calculateGridSize();
+    const center = {
+      x: Math.floor(gridWidth / 2),
+      y: Math.floor(gridHeight / 2),
+    };
+
+    setSnake([center, { x: center.x, y: center.y + 1 }]);
     setFoods(
       Array(5)
         .fill(null)
-        .map(() => generateFood([], newGridSize))
+        .map(() => generateFood(snake, { gridWidth, gridHeight }))
     );
-    setGameOver(false);
+    setDirection("UP");
     setScore(0);
+    setGameOver(false);
     setIsPaused(false);
     setSpeed(150);
-
-    gameOverAudioRef.current.pause();
-    gameOverAudioRef.current.currentTime = 0;
+    setLastDirectionChange(Date.now());
 
     backgroundAudioRef.current.currentTime = 0;
-    backgroundAudioRef.current.play();
+    backgroundAudioRef.current.play().catch(() => {});
+    gameOverAudioRef.current.pause();
+    gameOverAudioRef.current.currentTime = 0;
   };
 
   useEffect(() => {
@@ -281,13 +268,28 @@ const Game = () => {
           break;
       }
     },
-    [direction, gameOver, lastDirectionChange]
+    [direction, gameOver]
   );
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
+
+  useEffect(() => {
+    if (!userInteracted) {
+      backgroundAudioRef.current.pause();
+      return;
+    }
+
+    const snakeIsMoving = !gameOver && !isPaused && !showModal;
+
+    if (snakeIsMoving) {
+      backgroundAudioRef.current.play().catch(() => {});
+    } else {
+      backgroundAudioRef.current.pause();
+    }
+  }, [gameOver, isPaused, showModal, userInteracted]);
 
   useEffect(() => {
     const highScore = getHighScore();
@@ -351,6 +353,25 @@ const Game = () => {
       window.removeEventListener("touchmove", handleTouchMove);
     };
   }, [touchStart, direction, gameOver]);
+
+  useEffect(() => {
+    const onFirstInteraction = () => {
+      setUserInteracted(true);
+      window.removeEventListener("keydown", onFirstInteraction);
+      window.removeEventListener("click", onFirstInteraction);
+      window.removeEventListener("touchstart", onFirstInteraction);
+    };
+
+    window.addEventListener("keydown", onFirstInteraction);
+    window.addEventListener("click", onFirstInteraction);
+    window.addEventListener("touchstart", onFirstInteraction);
+
+    return () => {
+      window.removeEventListener("keydown", onFirstInteraction);
+      window.removeEventListener("click", onFirstInteraction);
+      window.removeEventListener("touchstart", onFirstInteraction);
+    };
+  }, []);
 
   const renderGrid = () => {
     const grid = [];
