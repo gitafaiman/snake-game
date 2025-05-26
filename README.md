@@ -6,22 +6,22 @@ A fun and nostalgic Snake game built with React. Snakie features smooth animatio
 
 This project is built with:
 
-- [React](https://reactjs.org/) – for building the game interface  
-- JavaScript – for game logic and interactivity  
-- CSS – for custom styling and layout  
+- [React](https://reactjs.org/) – for building the game interface
+- JavaScript – for game logic and interactivity
+- CSS – for custom styling and layout
 - HTML5 Audio – for background music and sound effects
 
 ## 🎮 Features
 
-- Classic snake gameplay with modern styling  
-- Animated movement and smooth controls  
-- Audio feedback for game events  
-- Responsive design for desktop and mobile  
+- Classic snake gameplay with modern styling
+- Animated movement and smooth controls
+- Audio feedback for game events
+- Responsive design for desktop and mobile
 - Game-over screen with replay option
 
 ## 🌐 Live Demo
 
-Play it here: [snakie-game.netlify.app](https://snakie-game.netlify.app/)
+Play it here: [snakiegame.netlify.app](snakiegame.netlify.app/)
 
 ---
 
