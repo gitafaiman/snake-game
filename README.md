@@ -21,7 +21,7 @@ This project is built with:
 
 ## 🌐 Live Demo
 
-Play it here: [snakiegame.netlify.app](snakiegame.netlify.app/)
+Play it here: [snakiegame.netlify.app](snakiegame.netlify.app)
 
 ---
 
